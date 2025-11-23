@@ -31,6 +31,7 @@ namespace Postolache_Elena_Lab2.Pages.Books
             }
             //se va include Author conform cu sarcina de la lab 2
             Book = await _context.Book
+            .Include(b => b.Author)
             .Include(b => b.Publisher)
             .Include(b => b.BookCategories).ThenInclude(b => b.Category)
             .AsNoTracking()
@@ -45,7 +46,7 @@ namespace Postolache_Elena_Lab2.Pages.Books
 
             
             ViewData["PublisherID"] = new SelectList(_context.Set<Publisher>(), "ID", "PublisherName");
-            ViewData["AuthorID"] = new SelectList(_context.Set<Author>(), "ID", "AuthorName");
+            ViewData["AuthorID"] = new SelectList(_context.Set<Author>(), "ID", "FullName");
             return Page();
         }
 
@@ -71,7 +72,7 @@ namespace Postolache_Elena_Lab2.Pages.Books
             if (await TryUpdateModelAsync<Book>(
             bookToUpdate,
             "Book",
-            i => i.Title, i => i.Author,
+            i => i.Title, i => i.AuthorID,
             i => i.Price, i => i.PublishingDate, i => i.PublisherID))
             {
                 UpdateBookCategories(_context, selectedCategories, bookToUpdate);
