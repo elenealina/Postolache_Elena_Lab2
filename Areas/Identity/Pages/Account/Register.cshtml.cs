@@ -50,8 +50,7 @@ namespace Postolache_Elena_Lab2.Areas.Identity.Pages.Account
             _emailSender = emailSender;
             _context = context;
         }
-        [BindProperty]
-        public Member Member { get; set; }
+        
         
         [BindProperty]
         public InputModel Input { get; set; }
@@ -101,17 +100,29 @@ namespace Postolache_Elena_Lab2.Areas.Identity.Pages.Account
                 await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
                 var result = await _userManager.CreateAsync(user, Input.Password);
 
-                Member.Email = Input.Email;
-                _context.Member.Add(Member);
-                await _context.SaveChangesAsync();
-                _logger.LogInformation("User created a new account with password.");
+
+
 
                 if (result.Succeeded)
                 {
+                     // Adăugăm rolul User
+                    await _userManager.AddToRoleAsync(user, "User");
+
+                    // Creăm automat membru în baza de date
+                    var newMember = new Member
+                    {
+                        Email = Input.Email
+                    };
+
+                    _context.Member.Add(newMember);
+                    await _context.SaveChangesAsync();
+
+                    _logger.LogInformation("User created a new account with password.");
 
                     var userId = await _userManager.GetUserIdAsync(user);
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                     code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+
                     var callbackUrl = Url.Page(
                         "/Account/ConfirmEmail",
                         pageHandler: null,
